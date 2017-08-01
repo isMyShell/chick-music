@@ -1,5 +1,5 @@
 export default class Singer {
-	constructor({id, name , mid}) {
+	constructor({id,name,mid}) {
 		this.Fsinger_id = id
 		this.Fsinger_name = name
 		this.Fsinger_mid = mid

@@ -65,7 +65,7 @@ export default {
       })
     }
   },
-  loadImg(){
+  loadImgFn(){
     if(!this.checkImg){
       this.$refs.scroll.refresh()
       this.checkImg = true
@@ -75,7 +75,7 @@ export default {
 }
 </script>
 
-<style lang="stylus">
+<style lang="stylus" scoped>
 @import "../../common/stylus/variable"
 
 .recommend

@@ -1,32 +1,47 @@
 <template lang="html">
-  <div class="">
-  	歌手
+  <div class="singer">
+  	<list-view :data='singers' ></list-view>
   </div>
 </template>
 
-<script>
+<script >
+import ListView from 'base/listview/listview'
 import {getSingerList} from 'api/singer.js'
 import { ERR_OK } from 'api/config'
-import Singer from 'common/js/singer'
+import Singer from 'common/js/singer.js'
+
 let HOT_NAME = '热门'
 let HOT_SINGER_LEN = 10
 export default {
   data(){
     return{
-      singers:[]
+      singers:[
+        {
+          "title":" ",
+          "items":[
+            {
+              "Fsinger_id":"4286",
+              "Fsinger_mid":"001BLpXF2DyJe2",
+              "Fsinger_name":"林俊杰",
+              "img":""
+            }
+          ]
+        }
+      ]
     }
   },
   created(){
     this._getSingeList()
   },
+  components:{
+    ListView
+  },
   methods:{
     _getSingeList(){
       getSingerList().then((res) => {
         if(res.code === ERR_OK){
-          this.singers = res.data.list
-          // console.log(this.singers);
-
-          console.log(this._normalizeSinger(this.singers));
+          this.singers = this._normalizeSinger(res.data.list)
+          console.log(this.singers);
         }
       })
     },
@@ -73,12 +88,16 @@ export default {
       ret.sort((a,b) => {
         return a.title.charCodeAt(0) - b.title.charCodeAt(0)
       })
-      console.log(hot.concat(ret)[0].items);
       return hot.concat(ret)
-    }
+    },
   }
 }
 </script>
 
 <style lang="stylus">
+.singer
+    position: fixed
+    top: 88px
+    bottom: 0
+    width: 100%
 </style>

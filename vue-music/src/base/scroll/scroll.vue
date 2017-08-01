@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
 	<div ref="wrapper">
 		<slot></slot>
 	</div>
@@ -11,7 +11,7 @@ export default {
 	props:{
 		probeType: {
 			type: Number,
-			default: 1
+			default: 2
 		},
 		click: {
 			type: Boolean,
@@ -19,7 +19,7 @@ export default {
 		},
 		data: {
 			type: Array,
-			default: null
+			default: []
 		}
 	},
 	mounted(){
@@ -34,7 +34,8 @@ export default {
 			}
 			this.scroll = new BScroll (this.$refs.wrapper,{
 				probeType:this.probeType,
-				click:this.click
+				click:this.click,
+				preventDefault: true
 			})
 		},
 		enable() {
