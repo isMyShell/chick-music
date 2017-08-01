@@ -15,19 +15,7 @@ let HOT_SINGER_LEN = 10
 export default {
   data(){
     return{
-      singers:[
-        {
-          "title":" ",
-          "items":[
-            {
-              "Fsinger_id":"4286",
-              "Fsinger_mid":"001BLpXF2DyJe2",
-              "Fsinger_name":"林俊杰",
-              "img":""
-            }
-          ]
-        }
-      ]
+      singers:[]
     }
   },
   created(){

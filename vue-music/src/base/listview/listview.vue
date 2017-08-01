@@ -1,25 +1,57 @@
 <template>
-	<scroll class="listview" :data='data'>
+	<scroll
+		class="listview"
+		:data='data'
+		:scrollListener='scrollListener'
+		:probeType='probeType'
+		@scroll='scroll'
+		ref='listview'>
 		<ul>
-			<li v-for='group in data' class="list-group" >
+			<li v-for='group in data' class="list-group" ref='listGroup'>
 				<h2 class="list-group-title">{{group.title}}</h2>
 				<ul>
-					<li v-for='item in group.items'>
-						{{item.Fsinger_name}}
+					<li v-for='item in group.items' class="list-group-item">
+						<img class="avatar" v-lazy="item.img">
+            <span class="name">{{item.Fsinger_name}}</span>
 					</li>
 				</ul>
 			</li>
 		</ul>
+		<div class="list-shortcut" @touchstart='shortCutScroll' @touchmove.stop.prevent='shortCutTouchMove'>
+			<ul>
+				<li class="item" :data-index='index' v-for='(item, index) in shortCutList'  :class="{'current':currentIndex===index}">{{item}}</li>
+			</ul>
+		</div>
+		<div class="list-fixed" ref="fixed" v-show="fixedTitle">
+      <div class="fixed-title">{{fixedTitle}} </div>
+    </div>
+		<div v-show="!data.length" class="loading-container">
+		 	<loading></loading>
+	 	</div>
 	</scroll>
 </template>
 
 <script>
 import Scroll from 'base/scroll/scroll';
+import Loading from 'base/loading/loading';
+import {getDataAttribute} from 'common/js/dom.js';
+
+let ANCHOR_HEIGHT = 18
+let FIXTITLE_HEIGHT = 30
 
 export default {
 	data(){
 		return{
+			scrollY: -1,
+			listHight:[],
+			currentIndex:0,
+			diff:-1
 		}
+	},
+	created(){
+		this.touch = {}
+		this.scrollListener = true
+		this.probeType = 3
 	},
 	props: {
     data: {
@@ -30,10 +62,104 @@ export default {
     }
   },
 	components:{
-		Scroll
+		Scroll,
+		Loading
 	},
 	methods:{
+		shortCutScroll(e){
+			let anchorIndex = getDataAttribute(e.target, 'index')
+			this.touch.anchorIndex = anchorIndex
+			let firstTouch = e.touches[0]
+			this.touch.y1 = firstTouch.pageY
+			// console.log(this.touch.y1);
+			this._scrollTo(anchorIndex)
+		},
+		shortCutTouchMove(e){
+			let firstTouch = e.touches[0]
+			this.touch.y2 = firstTouch.pageY
 
+			let delat = (this.touch.y2 - this.touch.y1) / ANCHOR_HEIGHT | 0 //floor取整
+			let anchorIndex = parseInt(this.touch.anchorIndex,10) + delat
+			this._scrollTo(anchorIndex)
+
+		},
+		scroll(pos){
+			 this.scrollY = pos.y
+			//  console.log(this.scrollY);
+		},
+		_scrollTo(index) {
+
+			if(index === null){
+				return
+			}
+			if(index<0){
+				index = 0
+			}else if(index>this.listHight.length-2){
+				index = this.listHight.length-2
+			}
+			this.scrollY = -this.listHight[index]
+			this.$refs.listview.scrollToElement(this.$refs.listGroup[index], 0)
+		},
+		_calculateHeight(){
+			this.listHight = []
+			let list = this.$refs.listGroup
+			let height = 0
+			this.listHight.push(height)
+			for(let i=0; i<list.length; i++){
+				let item = list[i]
+				height += item.clientHeight
+				this.listHight.push(height)
+			}
+			console.log(this.listHight);
+		}
+
+	},
+	computed:{
+		shortCutList(){
+			return this.data.map((item, index) => {
+				return item.title.substr(0,1)
+			})
+		},
+		fixedTitle(){
+			if(this.scrollY > 0){
+				return ''
+			}
+			return this.data[this.currentIndex]?this.data[this.currentIndex].title:''
+		}
+	},
+	watch:{
+		data(){
+			setTimeout(() => {
+				this._calculateHeight()
+			},20)
+		},
+		scrollY(newVal){
+			// console.log(newVal);
+			let listHight = this.listHight
+			for (var i = 0; i < listHight.length-1; i++) {
+				let height1 = listHight[i]
+				let height2 = listHight[i+1]
+				if(-newVal>=height1 && -newVal<height2 ){
+					this.currentIndex = i
+					//diff 高度
+					this.diff = height2 + newVal
+					// console.log(this.currentIndex);
+					return
+				}else if(newVal>0){
+					this.currentIndex = 0
+					// console.log(this.currentIndex);
+					return
+				}else if(-newVal>height2){
+					this.currentIndex = listHight.length - 2
+				}
+			}
+		},
+		diff(newVal){
+			console.log(newVal);
+			let fixedTop = (newVal<FIXTITLE_HEIGHT && newVal>0)?newVal-FIXTITLE_HEIGHT:0
+			this.$refs.fixed.style.transform = `translate3d(0,${fixedTop}px,0)`
+
+		}
 	}
 }
 </script>
