@@ -10,7 +10,7 @@
 			<li v-for='group in data' class="list-group" ref='listGroup'>
 				<h2 class="list-group-title">{{group.title}}</h2>
 				<ul>
-					<li v-for='item in group.items' class="list-group-item">
+					<li v-for='item in group.items' class="list-group-item" @click='toSingerDetail(item)'>
 						<img class="avatar" v-lazy="item.img">
             <span class="name">{{item.Fsinger_name}}</span>
 					</li>
@@ -86,6 +86,9 @@ export default {
 		scroll(pos){
 			 this.scrollY = pos.y
 			//  console.log(this.scrollY);
+		},
+		toSingerDetail(item){
+			this.$emit('select',item)
 		},
 		_scrollTo(index) {
 
