@@ -19,7 +19,9 @@ export default {
 		},
 		data: {
 			type: Array,
-			default: []
+			default: function () {
+	        return []
+	    }
 		},
 		scrollListener:{
 			type:Boolean,

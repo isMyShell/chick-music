@@ -3,6 +3,6 @@ export default class Singer {
 		this.Fsinger_id = id
 		this.Fsinger_name = name
 		this.Fsinger_mid = mid
-		this.img = `https://y.gtimg.cn/music/photo_new/T001R150x150M000${mid}.jpg?max_age=2592000`
+		this.img = `https://y.gtimg.cn/music/photo_new/T001R300x300M000${mid}.jpg?max_age=2592000`
 	}
 }
