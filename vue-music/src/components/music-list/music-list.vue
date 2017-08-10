@@ -13,8 +13,14 @@
       </div>
       <div class="filter" ref="filter"></div>
     </div>
+		<div class="bg-layer" ref='layer'>
+
+		</div>
 		<scroll :data="songs.list"
-            :listen-scroll="scrollListener" :probe-type="probeType" class="list" ref="list">
+            :scroll-listener="scrollListener"
+						:probe-type="probeType"
+						@scroll='scroll'
+						class="list" ref="list">
       <div class="song-list-wrapper">
         <song-list :songs="songs.list"></song-list>
       </div>
@@ -30,12 +36,14 @@ import Scroll from 'base/scroll/scroll'
 import SongList from 'base/song-list/song-list'
 import Loading from 'base/loading/loading'
 
+import {prefixStyle} from 'common/js/dom.js';
+
+const transform = prefixStyle('transform')
 const RESERVED_HEIGHT = 40
 export default {
 	data(){
 		return{
-			scrollListener:true,
-			probeType:3
+			scrollY:0
 		}
 	},
 	props:['songs','title','headImg'],
@@ -52,7 +60,41 @@ export default {
 	methods:{
 		back(){
 			this.$router.back()
+		},
+		scroll(pos){
+			this.scrollY = pos.y
+			console.log(pos.y);
 		}
+	},
+	watch:{
+		scrollY(newY){
+			let translateY = Math.max(this.minTransalteY, newY)
+			let zIndex = 0
+			let scale = 1
+			const percent = Math.abs(newY / this.imageHeight)
+			this.$refs.layer.style[transform] = `translate3d(0,${translateY}px,0)`
+			if (newY > 0) {
+        scale = 1 + percent
+				zIndex = 10
+      }
+			if (newY < this.minTransalteY) {
+          zIndex = 10
+          this.$refs.bgImage.style.paddingTop = 0
+          this.$refs.bgImage.style.height = `${RESERVED_HEIGHT}px`
+          this.$refs.playBtn.style.display = 'none'
+        } else {
+          this.$refs.bgImage.style.paddingTop = '70%'
+          this.$refs.bgImage.style.height = 0
+          this.$refs.playBtn.style.display = ''
+        }
+				this.$refs.bgImage.style[transform] = `scale(${scale})`
+        this.$refs.bgImage.style.zIndex = zIndex
+		}
+	},
+	created(){
+		this.scrollListener = true,
+		this.probeType = 3,
+		this.scrollListener = true
 	},
 	mounted() {
     this.imageHeight = this.$refs.bgImage.clientHeight
