@@ -1,7 +1,7 @@
 <template lang="html">
 	<div class="song-list">
     <ul>
-      <li class="item" v-for="(song, index) in songs">
+      <li class="item" @click='selectItem(song, index)' v-for="(song, index) in songs">
         <div class="content">
           <h2 class="name">{{song.musicData.songname}}</h2>
           <p class="desc">{{getDesc(song)}}</p>
@@ -24,6 +24,10 @@ export default {
 	methods:{
 		getDesc(song){
 			return `${song.musicData.singer[0].name}·${song.musicData.albumname}`
+		},
+		selectItem(song, index){
+			// console.log(song,index);
+			this.$emit("select", song, index)
 		}
 	}
 }

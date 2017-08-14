@@ -22,9 +22,9 @@
 						@scroll='scroll'
 						class="list" ref="list">
       <div class="song-list-wrapper">
-        <song-list :songs="songs.list"></song-list>
+        <song-list :songs="songs.list" @select='selectItem'></song-list>
       </div>
-			<div v-show="!songs.list" class="loading-container">
+			<div v-show="!songs.list" class="loading-container" >
         <loading></loading>
       </div>
     </scroll>
@@ -35,7 +35,7 @@
 import Scroll from 'base/scroll/scroll'
 import SongList from 'base/song-list/song-list'
 import Loading from 'base/loading/loading'
-
+import {mapActions} from 'vuex'
 import {prefixStyle} from 'common/js/dom.js';
 
 const transform = prefixStyle('transform')
@@ -58,13 +58,23 @@ export default {
 		Loading
 	},
 	methods:{
+		selectItem(item, index){
+			console.log(item, index);
+			this.selectPlay({
+				list:this.songs.list,
+				index:index
+			})
+		},
 		back(){
 			this.$router.back()
 		},
 		scroll(pos){
 			this.scrollY = pos.y
 			console.log(pos.y);
-		}
+		},
+		...mapActions([
+			'selectPlay'
+		])
 	},
 	watch:{
 		scrollY(newY){
