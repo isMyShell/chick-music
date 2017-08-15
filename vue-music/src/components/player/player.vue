@@ -50,16 +50,16 @@
           </div>
           <div class="operators">
             <div class="icon i-left">
-              <i class="icon icon-sequence"></i>
+              <i class="icon" :class="playModeIcon" @click='changePlayModel'></i>
             </div>
-            <div class="icon i-left" @click='prev' :class="disableCls">
-              <i class="icon-prev"></i>
+            <div class="icon i-left" :class="disableCls">
+              <i class="icon-prev" @click='prev'></i>
             </div>
-            <div class="icon i-center" @click='togglePlaying' :class="disableCls">
-              <i :class="playIcon"></i>
+            <div class="icon i-center" :class="disableCls">
+              <i :class="playIcon" @click='togglePlaying'></i>
             </div>
-            <div class="icon i-right" @click='next' :class="disableCls">
-              <i class="icon-next"></i>
+            <div class="icon i-right" :class="disableCls">
+              <i class="icon-next" @click='next'></i>
             </div>
             <div class="icon i-right">
               <i class="icon icon-not-favorite"></i>
@@ -78,10 +78,9 @@
 	        <p class="desc" v-html="currentSong.musicData.singer[0].name"></p>
 	      </div>
 	      <div class="control" @click.stop='togglePlaying' :class="disableCls">
-					<i :class="miniIcon"></i>
-	        <!-- <progress-circle :radius="radius" :percent="percent">
+	        <progress-circle :radius="radius" :percent="percent">
 	          <i class="icon-mini" :class="miniIcon"></i>
-	        </progress-circle> -->
+	        </progress-circle>
 	      </div>
 	      <div class="control">
 	        <i class="icon-playlist"></i>
@@ -97,18 +96,22 @@ import {mapGetters, mapMutations} from 'vuex';
 import animations from 'create-keyframe-animation'
 import {prefixStyle} from 'common/js/dom'
 import ProgressBar from 'base/progress-bar/progress-bar';
-
+import ProgressCircle from 'base/progress-circle/progress-circle';
+import {playMode} from 'common/js/config';
+import {shuffle} from 'common/js/utils';
 const transform = prefixStyle('transform')
 const transitionDuration = prefixStyle('transitionDuration')
 export default {
 	data(){
 		return{
 			songReady:false,
-			currentTime:0
+			currentTime:0,
+			radius:32
 		}
 	},
 	components:{
-		ProgressBar
+		ProgressBar,
+		ProgressCircle
 	},
 	computed:{
 		cdCls(){
@@ -126,6 +129,9 @@ export default {
 		percent(){
 			return (this.currentTime * 1) / (this.currentSong.musicData.interval * 1)
 		},
+		playModeIcon(){
+			return this.mode === playMode.sequence  ? 'icon-sequence' : this.mode === playMode.loop ? 'icon-loop'  : 'icon-random'
+		},
 		cdUrl(){
 			return `https://y.gtimg.cn/music/photo_new/T002R300x300M000${this.currentSong.musicData.albummid}.jpg?max_age=2592000`
 		},
@@ -138,7 +144,9 @@ export default {
 			'playlist',
 			'currentIndex',
 			'currentSong',
-			'playing'
+			'playing',
+			'mode',
+			'sequenceList'
 		])
 	},
 	methods:{
@@ -231,8 +239,16 @@ export default {
 			updateTime(e){
 				this.currentTime = e.target.currentTime
 			},
+			loop(){
+				this.$refs.audio.currentTime = 0
+				this.$refs.audio.play()
+			},
 			end(){
-				this.next()
+				if(this.mode === playMode.loop){
+					this.loop()
+				}else {
+					this.next()
+				}
 			},
 			onProgressBarChange(percent){
 				this.$nextTick(() => {
@@ -241,6 +257,24 @@ export default {
 	          this.togglePlaying()
 	        }
 				})
+			},
+			changePlayModel(){
+				let mode = (this.mode + 1) % 3
+				this.setPlayMode(mode)
+				let list = []
+				if (mode === playMode.random) {
+					list = shuffle(this.sequenceList)
+				}else {
+					list = this.sequenceList
+				}
+				this.resetCurrentIndex(list)
+				this.setPlayList(list)
+			},
+			resetCurrentIndex(list){
+				let index = list.findIndex((item) => {
+					return item.musicData.songid === this.currentSong.musicData.songid
+				})
+				this.setCurrentIndex(index)
 			},
 			_format(interval){
 				let m = (interval/60 | 0)+ ''
@@ -269,11 +303,19 @@ export default {
 		...mapMutations({
 			setFullScreen:"SET_FULL_SCREEN",
 			setPlayingState:'SET_PLAYING_STATE',
-			setCurrentIndex:'SET_CURRENT_INDEX'
+			setCurrentIndex:'SET_CURRENT_INDEX',
+			setPlayMode:'SET_PLAY_MODE',
+			setPlayList:'SET_PLAYLIST'
 		})
 	},
 	watch:{
 		currentSong(newSong, oldSong){
+			if (!newSong.id) {
+        return
+      }
+			if(newSong.musicData.songid === oldSong.musicData.songid){
+				return
+			}
 			this.$nextTick(() => {
 				this.$refs.audio.play()
 			})
