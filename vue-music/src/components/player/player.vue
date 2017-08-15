@@ -310,7 +310,7 @@ export default {
 	},
 	watch:{
 		currentSong(newSong, oldSong){
-			if (!newSong.id) {
+			if (!newSong.musicData.songid) {
         return
       }
 			if(newSong.musicData.songid === oldSong.musicData.songid){
